@@ -144,27 +144,37 @@ export function EditorPage() {
           <Field label="本次修改要求">
             <Textarea value={instruction} onChange={(e) => setInstruction(e.target.value)} />
           </Field>
-          <Button onClick={() => void run("generate")} disabled={busy}>
-            <Bot className="h-4 w-4" />
-            生成初稿
-          </Button>
-          <Button variant="secondary" onClick={() => void run("rewrite-full")} disabled={busy || !content}>
-            <RefreshCcw className="h-4 w-4" />
-            全文改写
-          </Button>
-          <Button variant="secondary" onClick={() => void run("rewrite-selection")} disabled={busy || !selectedText}>
-            <RefreshCcw className="h-4 w-4" />
-            局部改写
-          </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" onClick={() => void saveDraft()}>
-              <Save className="h-4 w-4" />
-              保存版本
-            </Button>
-            <Button onClick={() => void saveFinalScript()}>
-              <Check className="h-4 w-4" />
-              最终稿
-            </Button>
+          <div className="rounded-lg border border-border bg-muted/50 p-3">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">AI 生成与改写</div>
+            <div className="grid gap-2">
+              <Button className="w-full justify-start" onClick={() => void run("generate")} disabled={busy}>
+                <Bot className="h-4 w-4" />
+                生成初稿
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button className="w-full" variant="secondary" onClick={() => void run("rewrite-full")} disabled={busy || !content}>
+                  <RefreshCcw className="h-4 w-4" />
+                  全文改写
+                </Button>
+                <Button className="w-full" variant="secondary" onClick={() => void run("rewrite-selection")} disabled={busy || !selectedText}>
+                  <RefreshCcw className="h-4 w-4" />
+                  局部改写
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-white p-3">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">保存与确认</div>
+            <div className="grid gap-2">
+              <Button className="w-full justify-start" variant="secondary" onClick={() => void saveDraft()}>
+                <Save className="h-4 w-4" />
+                保存当前版本
+              </Button>
+              <Button className="w-full justify-start" onClick={() => void saveFinalScript()}>
+                <Check className="h-4 w-4" />
+                保存为最终录制稿
+              </Button>
+            </div>
           </div>
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           <div className="border-t border-border pt-4">
