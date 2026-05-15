@@ -162,7 +162,7 @@ export function createStore(dataDir = path.resolve("data")) {
     const version = await readJson<ScriptVersion>(path.join(versionsDir(projectId), `${versionId}.json`));
     if (!version) throw new Error("版本不存在");
     await updateProject(projectId, { draftScript: version.content, status: "editing" });
-    return createVersion(projectId, { source: "restore", instruction: `恢复 ${versionId}`, content: version.content });
+    return version;
   }
 
   return {

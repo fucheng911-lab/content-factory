@@ -36,7 +36,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   async restoreVersion(projectId, versionId) {
     const version = await api.restoreVersion(projectId, versionId);
-    set({ content: version.content, versions: [version, ...get().versions] });
+    set({ content: version.content });
     return version.content;
   },
 }));
