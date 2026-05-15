@@ -1,0 +1,7 @@
+interface:
+  display_name: "Idea to HyperFrames Video"
+  short_description: "Turn raw ideas into video scripts"
+  default_prompt: "Use $idea-to-hyperframes-video to turn my rough idea or voice note into a spoken script, storyboard, asset plan, and HyperFrames handoff."
+
+policy:
+  allow_implicit_invocation: true
