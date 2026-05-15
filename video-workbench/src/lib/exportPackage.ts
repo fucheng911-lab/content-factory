@@ -11,6 +11,9 @@ export async function exportProjectZip(project: VideoProject) {
   root.file("02-script/spoken-script.md", `# Spoken Script\n\n${project.spokenScript}\n`);
   root.file("02-script/subtitle-lines.md", `# Subtitle Lines\n\n${project.subtitleLines}\n`);
   root.file("02-script/script-review.md", `# Script Review\n\n${project.reviewNotes}\n`);
+  if (project.recordingTranscript) {
+    root.file("05-recording/recording-transcript.md", `# Recording Transcript\n\n${project.recordingTranscript}\n`);
+  }
   root.file("02-script/chapter-script.csv", toCsv(project.chapterRows));
   root.file("03-assets/asset-manifest.json", JSON.stringify({ project: project.title, assets: project.assetRows }, null, 2));
   root.file("04-hyperframes/DESIGN.md", project.designDoc);

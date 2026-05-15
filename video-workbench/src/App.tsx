@@ -1,6 +1,7 @@
 import { ChangeEvent, useMemo, useState } from "react";
 import {
   AudioLines,
+  Bot,
   Download,
   FileArchive,
   FileSpreadsheet,
@@ -12,9 +13,10 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
+import { transcribeRecording } from "./lib/api";
 import { downloadText, toCsv } from "./lib/csv";
 import { exportProjectZip } from "./lib/exportPackage";
-import { createProjectFromIdea, createTimedStoryboard } from "./lib/project";
+import { createProjectFromIdea, createTimedStoryboard, createTimedStoryboardFromTranscript } from "./lib/project";
 import { loadProject, saveProject } from "./lib/storage";
 import type { AssetRow, StoryboardRow, TimedStoryboardRow, VideoProject } from "./lib/types";
 
@@ -39,6 +41,9 @@ export function App() {
   const [form, setForm] = useState(defaultInput);
   const [project, setProject] = useState<VideoProject | null>(() => loadProject());
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const [recordingFile, setRecordingFile] = useState<File | null>(null);
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState("");
 
   const hasTimedStoryboard = Boolean(project?.timedStoryboardRows.length);
   const progress = useMemo(() => {
@@ -100,6 +105,8 @@ export function App() {
 
     const url = URL.createObjectURL(file);
     setRecordingUrl(url);
+    setRecordingFile(file);
+    setTranscriptionError("");
 
     const media = document.createElement(file.type.startsWith("video") ? "video" : "audio");
     media.preload = "metadata";
@@ -113,6 +120,25 @@ export function App() {
       });
       setActiveStep("storyboard");
     };
+  }
+
+  async function transcribeAndAlign() {
+    if (!project || !recordingFile || !project.recording) return;
+    setTranscribing(true);
+    setTranscriptionError("");
+    try {
+      const transcript = await transcribeRecording(recordingFile);
+      updateProject({
+        ...project,
+        recordingTranscript: transcript,
+        timedStoryboardRows: createTimedStoryboardFromTranscript(project.storyboardRows, transcript, project.recording.duration),
+      });
+      setActiveStep("storyboard");
+    } catch (error) {
+      setTranscriptionError(error instanceof Error ? error.message : "转写失败。");
+    } finally {
+      setTranscribing(false);
+    }
   }
 
   function exportStoryboardCsv() {
@@ -248,6 +274,37 @@ export function App() {
                   <strong>{project.recording.name}</strong>
                   <span>{project.recording.duration}s</span>
                 </div>
+              )}
+              <button
+                className="primary-button wide"
+                type="button"
+                onClick={transcribeAndAlign}
+                disabled={!project?.recording || !recordingFile || transcribing || recordingFile.type.startsWith("video")}
+              >
+                <Bot size={18} />
+                {transcribing ? "Qwen 转写中..." : "Qwen 转写并对齐分镜"}
+              </button>
+              {recordingFile?.type.startsWith("video") && (
+                <p className="hint">当前 Qwen 转写只接收音频文件。视频文件可以先导出音频后上传。</p>
+              )}
+              {transcriptionError && <p className="error-text">{transcriptionError}</p>}
+              {project?.recordingTranscript && (
+                <label>
+                  Qwen 转写文本
+                  <textarea
+                    value={project.recordingTranscript}
+                    rows={8}
+                    onChange={(event) =>
+                      updateProject({
+                        ...project,
+                        recordingTranscript: event.target.value,
+                        timedStoryboardRows: project.recording
+                          ? createTimedStoryboardFromTranscript(project.storyboardRows, event.target.value, project.recording.duration)
+                          : project.timedStoryboardRows,
+                      })
+                    }
+                  />
+                </label>
               )}
             </div>
             <div className="panel media-panel">

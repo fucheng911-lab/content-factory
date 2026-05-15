@@ -81,4 +81,5 @@ export type VideoProject = {
     duration: number;
     type: string;
   };
+  recordingTranscript?: string;
 };
